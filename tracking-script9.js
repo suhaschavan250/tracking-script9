@@ -24,7 +24,7 @@
       ctaClickConversionId: params.get('ctaClickConversionId'),
       ga4MeasurementId: params.get('ga4Id'),
       tiktokPixelId: params.get('tiktokPixelId'),
-      linkedinEventId: params.get('linkedinEventId'), // ✅ NEW
+      linkedinEventId: params.get('linkedinEventId'),
       ctaTexts: (params.get('ctaText') || "").split(',').map(s => normalize(s))
     };
   }
@@ -44,7 +44,7 @@
       typeof fbq === 'function' ||
       typeof window.gtag === 'function' ||
       typeof ttq === 'function' ||
-      typeof lintrk === 'function' // ✅ NEW
+      typeof lintrk === 'function'
     );
   }
 
@@ -84,23 +84,21 @@
       console.log(`[Tracking] TikTok event: ${eventName}`, payload);
     }
 
-    // Google Ads
-    if (typeof gtag === 'function' && CONFIG.googleAdsId) {
-      let conversionId = null;
-      if (eventName === 'scroll_20') conversionId = CONFIG.scroll20ConversionId;
-      if (eventName === 'scroll_50') conversionId = CONFIG.scroll50ConversionId;
-      if (eventName === 'any_click') conversionId = CONFIG.anyClickConversionId;
-      if (eventName === 'any_cta') conversionId = CONFIG.ctaClickConversionId;
+    // Google Ads (send only if both ID and conversion ID are present)
+    let conversionId = null;
+    if (eventName === 'scroll_20') conversionId = CONFIG.scroll20ConversionId;
+    if (eventName === 'scroll_50') conversionId = CONFIG.scroll50ConversionId;
+    if (eventName === 'any_click') conversionId = CONFIG.anyClickConversionId;
+    if (eventName === 'any_cta') conversionId = CONFIG.ctaClickConversionId;
 
-      if (conversionId) {
-        gtag('event', eventName, {
-          send_to: `${CONFIG.googleAdsId}/${conversionId}`
-        });
-        console.log(`[Tracking] Google Ads event: ${eventName}`);
-      }
+    if (typeof gtag === 'function' && CONFIG.googleAdsId && conversionId) {
+      gtag('event', eventName, {
+        send_to: `${CONFIG.googleAdsId}/${conversionId}`
+      });
+      console.log(`[Tracking] Google Ads event: ${eventName}`);
     }
 
-    // ✅ LinkedIn (only any_click & any_cta)
+    // LinkedIn (only any_click & any_cta)
     if (typeof lintrk === 'function' && CONFIG.linkedinEventId) {
       if (eventName === 'any_click' || eventName === 'any_cta') {
         lintrk('track', { conversion_id: CONFIG.linkedinEventId });
